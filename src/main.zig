@@ -34,7 +34,7 @@ pub fn main() !void {
             display.err.unknown_argument(x[1]);
         }
     } else if (x.len == 3 and std.mem.eql(u8, x[1], "install")) {
-        install.install_package(x[2]);
+        try install.install_package(x[2]);
     } else {
         display.err.unknown_argument(x[2]);
     }
