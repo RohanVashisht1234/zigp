@@ -24,7 +24,7 @@ pub fn fetch_versions(repo: []const u8) !std.ArrayList([]const u8) {
         std.debug.print("{s}Didn't recieve a responce, please check your internet connection.{s}", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
     }
     std.debug.print("{s}Installing {s}{s}.{s}\n", .{ ansi.YELLOW, ansi.UNDERLINE, repo, ansi.RESET });
-    std.debug.print("{s}Please select the version you want to install:{s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
+    std.debug.print("{s}Please select the version you want to install (type the index number):{s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
     const body = response.written();
     if (body.len == 0 or body[0] != '[') {
         std.debug.print("{s}A non json responce was recieved which is most likely an error, responce recieved:\n{s}", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
@@ -55,5 +55,16 @@ pub fn install_package(repo_name: []const u8) !void {
         std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });
     }
 
-    
+    const stdin = std.fs.File.stdin();
+
+    std.debug.print(">>>", .{});
+    var buf: [16]u8 = undefined;
+    const len = try stdin.read(&buf);
+    var input = buf[0..len];
+    if (input.len > 0 and (input[input.len - 1] == '\n' or input[input.len - 1] == '\r')) {
+        input = input[0 .. input.len - 1];
+    }
+    const number = try std.fmt.parseInt(u16, input, 10);
+
+    std.debug.print("You entered: {}\n", .{number});
 }
