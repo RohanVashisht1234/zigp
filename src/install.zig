@@ -2,6 +2,7 @@ const std = @import("std");
 const MAX_ALLOWED_REPO_NAME_LENGTH = 2000;
 const url = "https://api.github.com/repos/{s}/releases";
 const ansi = @import("./libs/ansi_codes.zig");
+const tar_file_url = "https://github.com/{s}/archive/refs/tags/{s}.tar.gz";
 
 pub fn fetch_versions(repo: []const u8) !std.ArrayList([]const u8) {
     // I am doing -2 for making sure {} is not included.
@@ -50,7 +51,6 @@ pub fn fetch_versions(repo: []const u8) !std.ArrayList([]const u8) {
 
 pub fn install_package(repo_name: []const u8) !void {
     const d = try fetch_versions(repo_name);
-    // const x = "https://github.com/{}/archive/refs/tags/{}.tar.gz";
     for (d.items, 1..) |value, i| {
         std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });
     }
@@ -81,7 +81,23 @@ pub fn install_package(repo_name: []const u8) !void {
             continue :outer;
         }
         const items = d.items;
-        std.debug.print("{s}Installing: {s}\n", .{items[number - 1]});
+        var buf2: [2500]u8 = undefined;
+
+        const tag_to_install = if (number == 1)
+            try std.fmt.bufPrintZ(&buf2, "git+https://github.com/{s}", .{repo_name})
+        else
+            try std.fmt.bufPrintZ(&buf2, tar_file_url, .{ repo_name, items[number - 1] });
+        std.debug.print("{s}Installing: {s}{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.UNDERLINE, items[number - 1], ansi.RESET });
+
+        var process = std.process.Child.init(&[_][]const u8{ "zig", "fetch", "--save", tag_to_install }, std.heap.c_allocator);
+        try process.spawn();
+        const term = try process.wait();
+        switch (term.Exited) {
+            0 => std.debug.print("{s}Successfully installed {s}.{s}\n", .{ ansi.BRIGHT_GREEN, repo_name, ansi.RESET }),
+            1 => std.debug.print("{s}Zig fetch returned an error. The process returned 1 exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET }),
+            else => std.debug.print("{s}Zig fetch returned an unknown error. It returned {} exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, term.Exited, ansi.RESET }),
+        }
+
         break;
     }
 }
