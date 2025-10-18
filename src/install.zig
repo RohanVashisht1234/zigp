@@ -57,14 +57,31 @@ pub fn install_package(repo_name: []const u8) !void {
 
     const stdin = std.fs.File.stdin();
 
-    std.debug.print(">>>", .{});
-    var buf: [16]u8 = undefined;
-    const len = try stdin.read(&buf);
-    var input = buf[0..len];
-    if (input.len > 0 and (input[input.len - 1] == '\n' or input[input.len - 1] == '\r')) {
-        input = input[0 .. input.len - 1];
+    outer: while (true) {
+        std.debug.print(">>>", .{});
+        var buf: [16]u8 = undefined;
+        const len = try stdin.read(&buf);
+        var input = buf[0..len];
+        if (input.len > 0 and (input[input.len - 1] == '\n' or input[input.len - 1] == '\r')) {
+            input = input[0 .. input.len - 1];
+        }
+        if (input.len == 0) {
+            std.debug.print("{s}Error:{s} No input entered.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
+            continue :outer;
+        }
+        for (input) |char| {
+            if (!std.ascii.isDigit(char)) {
+                std.debug.print("{s}Error:{s} Non charater input recieved.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
+                continue :outer;
+            }
+        }
+        const number = try std.fmt.parseInt(u16, input, 10);
+        if (number < 1 or number > d.items.len) {
+            std.debug.print("{s}Error:{s} Number selection is out of range.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
+            continue :outer;
+        }
+        const items = d.items;
+        std.debug.print("{s}Installing: {s}\n", .{items[number - 1]});
+        break;
     }
-    const number = try std.fmt.parseInt(u16, input, 10);
-
-    std.debug.print("You entered: {}\n", .{number});
 }
