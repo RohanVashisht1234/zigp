@@ -41,9 +41,8 @@ pub fn fetch_versions(repo: []const u8) !std.ArrayList([]const u8) {
         for (all_releases) |single_release| {
             try list.append(std.heap.c_allocator, single_release.object.get("tag_name").?.string);
         }
-        return list;
     }
-    unreachable;
+    return list;
 }
 
 // https://github.com/RohanVashisht1234/zorsig/archive/refs/tags/v0.0.1.tar.gz
@@ -58,7 +57,7 @@ pub fn install_package(repo_name: []const u8) !void {
     const stdin = std.fs.File.stdin();
 
     outer: while (true) {
-        std.debug.print(">>>", .{});
+        std.debug.print("{s}>>>{s} ", .{ ansi.BRIGHT_CYAN, ansi.RESET });
         var buf: [16]u8 = undefined;
         const len = try stdin.read(&buf);
         var input = buf[0..len];
@@ -93,7 +92,7 @@ pub fn install_package(repo_name: []const u8) !void {
         try process.spawn();
         const term = try process.wait();
         switch (term.Exited) {
-            0 => std.debug.print("{s}Successfully installed {s}.{s}\n", .{ ansi.BRIGHT_GREEN, repo_name, ansi.RESET }),
+            0 => std.debug.print("{s}Successfully installed {s}.{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, repo_name, ansi.RESET }),
             1 => std.debug.print("{s}Zig fetch returned an error. The process returned 1 exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET }),
             else => std.debug.print("{s}Zig fetch returned an unknown error. It returned {} exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, term.Exited, ansi.RESET }),
         }

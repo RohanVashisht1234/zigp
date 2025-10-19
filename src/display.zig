@@ -34,10 +34,11 @@ pub const help = struct {
         std.debug.print("    The install command is used to add a package into your Zig project.\n\n", .{});
 
         std.debug.print("{s}Syntax:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
-        std.debug.print("    {s}zigp{s} install {s}<package-name>{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("    {s}zigp{s} install {s}<provider-name>/<package-name>{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
 
         std.debug.print("{s}Example:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
-        std.debug.print("    {s}zigp{s} install {s}capy-ui/capy{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("    {s}zigp{s} install {s}gh/capy-ui/capy{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("{s}The above command installs the 'capy' package from GitHub(gh).{s}\n\n", .{ ansi.BRIGHT_WHITE ++ ansi.BOLD, ansi.RESET });
     }
 };
 
@@ -50,6 +51,10 @@ pub const err = struct {
     }
     pub fn unexpected_failed_self_update(x: u8) void {
         std.debug.print("Zigp wasn't able to update itself due to an unknown or unexpected issue. Value returned: {}\n", .{x});
+    }
+    pub fn unknown_provider(x: []const u8) void {
+        std.debug.print("{s}{s}Unknown provider recieved: {s}{s}\n", .{ ansi.RED, ansi.BOLD, x, ansi.RESET });
+        std.debug.print("{s}{s}Tip: Zigp currently support only GitHub (gh) as a provider, other providers are comming soon.{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.BOLD, x, ansi.RESET });
     }
 };
 
