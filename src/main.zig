@@ -62,7 +62,7 @@ pub fn main() !void {
                 return;
             }
             const repo_name = split_iter.rest();
-            try package_manager.install_app(repo_name);
+            try package_manager.install_app(repo_name, allocator);
         } else if (eql(args[1], "add")) {
             var split_iter = std.mem.splitScalar(u8, args[2], '/');
             const provider = split_iter.next().?;

@@ -5,7 +5,7 @@ const MAX_ALLOWED_REPO_NAME_LENGTH = 2000;
 const url = "https://api.github.com/repos/{s}/releases";
 const tar_file_url = "https://github.com/{s}/archive/refs/tags/{s}.tar.gz";
 
-pub fn fetch_versions(repo: []const u8, allocator: std.mem.Allocator) error.invalid_responce!std.ArrayList([]const u8) {
+pub fn fetch_versions(repo: []const u8, allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
     // I am doing -2 for making sure {} is not included.
     if (url.len + repo.len - 2 > MAX_ALLOWED_REPO_NAME_LENGTH) {
         @panic("The length of repo name is way too much long.");
@@ -53,7 +53,7 @@ pub fn fetch_versions(repo: []const u8, allocator: std.mem.Allocator) error.inva
 
     var list: std.ArrayList([]const u8) = .empty;
 
-    try list.append(allocator, "Master Branch (unstable)");
+    try list.append(allocator, try allocator.dupe(u8, "Master Branch (unstable)"));
 
     const all_releases = json_handler.value.array.items;
 

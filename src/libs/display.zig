@@ -1,5 +1,5 @@
 const std = @import("std");
-const ansi = @import("./libs/ansi_codes.zig");
+const ansi = @import("./ansi_codes.zig");
 
 pub const help = struct {
     pub fn all_info() void {
