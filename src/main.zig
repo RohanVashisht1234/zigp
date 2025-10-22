@@ -1,6 +1,6 @@
 const std = @import("std");
-const display = @import("display.zig");
-const install = @import("add_package.zig");
+const display = @import("libs/display.zig");
+const package_manager = @import("package_manager.zig");
 
 inline fn eql(x: []const u8, y: []const u8) bool {
     return std.mem.eql(u8, x, y);
@@ -53,28 +53,26 @@ pub fn main() !void {
 
         // args[0]  args[1]     args[2]
         // zigp     something   something_else
-        3 => {
-            if (eql(args[1], "install")) {
-                var split_iter = std.mem.splitScalar(u8, args[2], '/');
-                const provider = split_iter.next().?;
-                if (!eql(provider, "gh")) {
-                    // I will soon implement other providers.
-                    display.err.unknown_provider(provider);
-                    return;
-                }
-                const repo_name = split_iter.rest();
-                try install.install_app(repo_name);
-            } else if (eql(args[1], "add")) {
-                var split_iter = std.mem.splitScalar(u8, args[2], '/');
-                const provider = split_iter.next().?;
-                if (!eql(provider, "gh")) {
-                    display.err.unknown_provider(provider);
-                    return;
-                }
-                const repo_name = split_iter.rest();
-                try install.add_package(repo_name);
-            } else display.err.unknown_argument(args[2]);
-        },
+        3 => if (eql(args[1], "install")) {
+            var split_iter = std.mem.splitScalar(u8, args[2], '/');
+            const provider = split_iter.next().?;
+            if (!eql(provider, "gh")) {
+                // I will soon implement other providers.
+                display.err.unknown_provider(provider);
+                return;
+            }
+            const repo_name = split_iter.rest();
+            try package_manager.install_app(repo_name);
+        } else if (eql(args[1], "add")) {
+            var split_iter = std.mem.splitScalar(u8, args[2], '/');
+            const provider = split_iter.next().?;
+            if (!eql(provider, "gh")) {
+                display.err.unknown_provider(provider);
+                return;
+            }
+            const repo_name = split_iter.rest();
+            try package_manager.add_package(repo_name, allocator);
+        } else display.err.unknown_argument(args[2]),
 
         // args[0]  args[1]     args[2]         args[3]
         // zigp     something   something_else  yet_something
