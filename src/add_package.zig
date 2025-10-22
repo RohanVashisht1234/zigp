@@ -103,6 +103,7 @@ pub fn add_package(repo_name: []const u8) !void {
 
 pub fn install_app(repo_name: []const u8) !void {
     const d = try fetch_versions(repo_name);
+
     for (d.items, 1..) |value, i| {
         std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });
     }
