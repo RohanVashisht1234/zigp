@@ -1,6 +1,8 @@
 const std = @import("std");
 const display = @import("libs/display.zig");
 const package_manager = @import("package_manager.zig");
+const types = @import("types.zig");
+const hfs = @import("./libs/helper_functions.zig");
 
 inline fn eql(x: []const u8, y: []const u8) bool {
     return std.mem.eql(u8, x, y);
@@ -58,24 +60,49 @@ pub fn main() !void {
         // args[0]  args[1]     args[2]
         // zigp     something   something_else
         3 => if (eql(args[1], "install")) {
-            var split_iter = std.mem.splitScalar(u8, args[2], '/');
-            const provider = split_iter.next().?;
-            if (!eql(provider, "gh")) {
-                // I will soon implement other providers.
-                display.err.unknown_provider(provider);
+            const repo = hfs.query_to_repo(args[2]) catch |err| switch (err) {
+                error.unknown_provider => {
+                    display.err.unknown_provider();
+                    return;
+                },
+                error.wrong_format => {
+                    display.err.wrong_repo_format(args[2]);
+                    return;
+                },
+                else => {
+                    display.err.unknown_argument(args[2]);
+                    return;
+                },
+            };
+            // ======= I will soon be adding more providers =======
+            if (repo.provider != .GitHub) {
+                display.err.unknown_provider();
                 return;
             }
-            const repo_name = split_iter.rest();
-            try package_manager.install_app(repo_name, allocator);
+            // ====================================================
+            try package_manager.install_app(repo, allocator);
         } else if (eql(args[1], "add")) {
-            var split_iter = std.mem.splitScalar(u8, args[2], '/');
-            const provider = split_iter.next().?;
-            if (!eql(provider, "gh")) {
-                display.err.unknown_provider(provider);
+            const repo = hfs.query_to_repo(args[2]) catch |err| switch (err) {
+                error.unknown_provider => {
+                    display.err.unknown_provider();
+                    return;
+                },
+                error.wrong_format => {
+                    display.err.wrong_repo_format(args[2]);
+                    return;
+                },
+                else => {
+                    display.err.unknown_argument(args[2]);
+                    return;
+                },
+            };
+            // ======= I will soon be adding more providers =======
+            if (repo.provider != .GitHub) {
+                display.err.unknown_provider();
                 return;
             }
-            const repo_name = split_iter.rest();
-            try package_manager.add_package(repo_name, allocator);
+            // ====================================================
+            try package_manager.add_package(repo, allocator);
         } else display.err.unknown_argument(args[2]),
 
         // args[0]  args[1]     args[2]         args[3]

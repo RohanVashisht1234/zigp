@@ -1,6 +1,7 @@
 const std = @import("std");
 const ansi = @import("./libs/ansi_codes.zig");
 const hfs = @import("./libs/helper_functions.zig");
+const types = @import("types.zig");
 
 const url = "https://api.github.com/repos/{s}/releases";
 const tar_file_url = "https://github.com/{s}/archive/refs/tags/{s}.tar.gz";
@@ -8,10 +9,10 @@ const tar_file_url = "https://github.com/{s}/archive/refs/tags/{s}.tar.gz";
 // https://github.com/RohanVashisht1234/zorsig/archive/refs/tags/v0.0.1.tar.gz
 // https://github.com/{}/archive/refs/tags/{}.tar.gz
 
-pub fn add_package(repo_name: []const u8, allocator: std.mem.Allocator) !void {
+pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
     const stdin = std.fs.File.stdin();
 
-    var versions = hfs.fetch_versions(repo_name, allocator) catch return;
+    var versions = hfs.fetch_versions(repo, allocator) catch return;
 
     const items = versions.items;
 
@@ -21,6 +22,9 @@ pub fn add_package(repo_name: []const u8, allocator: std.mem.Allocator) !void {
         }
         versions.deinit(allocator);
     }
+
+    std.debug.print("{s}Installing {s}{s}{s}\n", .{ ansi.YELLOW, ansi.UNDERLINE, repo.repo_full_name, ansi.RESET });
+    std.debug.print("{s}Please select the version you want to install (type the index number):{s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
 
     for (items, 1..) |value, i| {
         std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });
@@ -61,16 +65,16 @@ pub fn add_package(repo_name: []const u8, allocator: std.mem.Allocator) !void {
         var buf2: [2500]u8 = undefined;
 
         const tag_to_install = if (number == 1)
-            try std.fmt.bufPrintZ(&buf2, "git+https://github.com/{s}", .{repo_name})
+            try std.fmt.bufPrintZ(&buf2, "git+https://github.com/{s}", .{repo.repo_full_name})
         else
-            try std.fmt.bufPrintZ(&buf2, tar_file_url, .{ repo_name, items[number - 1] });
+            try std.fmt.bufPrintZ(&buf2, tar_file_url, .{ repo.repo_full_name, items[number - 1] });
 
         std.debug.print("{s}Adding package: {s}{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.UNDERLINE, items[number - 1], ansi.RESET });
 
         var process = std.process.Child.init(&[_][]const u8{ "zig", "fetch", "--save", tag_to_install }, std.heap.c_allocator);
         const term = try process.spawnAndWait();
         switch (term.Exited) {
-            0 => std.debug.print("{s}Successfully installed {s}.{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, repo_name, ansi.RESET }),
+            0 => std.debug.print("{s}Successfully installed {s}.{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, repo.repo_full_name, ansi.RESET }),
             1 => std.debug.print("{s}Zig fetch returned an error. The process returned 1 exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET }),
             else => std.debug.print("{s}Zig fetch returned an unknown error. It returned {} exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, term.Exited, ansi.RESET }),
         }
@@ -78,7 +82,9 @@ pub fn add_package(repo_name: []const u8, allocator: std.mem.Allocator) !void {
     }
 }
 
-pub fn install_app(_: []const u8, _: std.mem.Allocator) !void {
+pub fn info(_: types.repository, _: std.mem.Allocator) void {}
+
+pub fn install_app(_: types.repository, _: std.mem.Allocator) !void {
     std.debug.print("{s}Installing apps, Comming soon!{s}", .{ ansi.BOLD ++ ansi.BRIGHT_GREEN, ansi.RESET });
     // const d = try hfs.fetch_versions(repo_name, allocator);
 

@@ -60,6 +60,18 @@ pub const help = struct {
 };
 
 pub const err = struct {
+    pub fn wrong_repo_format(x: []const u8) void {
+        std.debug.print("{s}{s}You have entered repository format in a wrong way.\n", .{ ansi.RED, ansi.BOLD });
+        std.debug.print("\nWrong format: \n", .{});
+        std.debug.print("            \"{s}\"{s}\n", .{ x, ansi.RESET });
+
+        std.debug.print("{s}Correct format: {s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
+
+        std.debug.print("    {s}zigp{s} install/add {s}<provider-name>/<owner-name>/<repo-name>{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+
+        std.debug.print("{s}Example:{s}\n", .{ ansi.BRIGHT_YELLOW ++ ansi.BOLD, ansi.RESET });
+        std.debug.print("    {s}zigp{s} install/add {s}gh/{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+    }
     pub fn unknown_argument(x: []const u8) void {
         std.debug.print("{s}{s}Unknown argument recieved: {s}{s}\n", .{ ansi.RED, ansi.BOLD, x, ansi.RESET });
         help.all_info();
@@ -70,9 +82,10 @@ pub const err = struct {
     pub fn unexpected_failed_self_update(x: u8) void {
         std.debug.print("{s}Zigp wasn't able to update itself due to an unknown or unexpected issue. Value returned: {}{s}\n", .{ ansi.BRIGHT_RED, x, ansi.RESET });
     }
-    pub fn unknown_provider(x: []const u8) void {
-        std.debug.print("{s}{s}Unknown provider recieved: {s}{s}\n", .{ ansi.RED, ansi.BOLD, x, ansi.RESET });
+    pub fn unknown_provider() void {
+        std.debug.print("{s}{s}Unknown provider recieved!{s}\n", .{ ansi.RED, ansi.BOLD, ansi.RESET });
         std.debug.print("{s}Tip: Zigp currently support only GitHub (gh) as a provider, other providers are comming soon.{s}\n", .{ ansi.BRIGHT_YELLOW ++ ansi.BOLD, ansi.RESET });
+        help.add_info();
     }
 };
 
