@@ -1,5 +1,5 @@
 .{
-    .name = .foo,
+    .name = .zigp,
     .version = "0.0.0",
     .fingerprint = 0x8c736521b45f0c97,
     .minimum_zig_version = "0.15.1",
