@@ -78,6 +78,6 @@ pub const err = struct {
 
 pub const success = struct {
     pub fn completed_self_update() void {
-        std.debug.print("Success fully updated itself\n", .{});
+        std.debug.print("{s}Zigp has successfully updated itself.{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, ansi.RESET });
     }
 };

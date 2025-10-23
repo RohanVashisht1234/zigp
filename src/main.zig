@@ -7,7 +7,11 @@ inline fn eql(x: []const u8, y: []const u8) bool {
 }
 
 fn self_update(allocator: std.mem.Allocator) !void {
-    var process = std.process.Child.init(&[_][]const u8{ "curl", "-fsSL", "https://zigistry.dev/update", "|", "bash" }, allocator);
+    var process = std.process.Child.init(&[_][]const u8{
+        "sh",
+        "-c",
+        "curl -fsSL https://raw.githubusercontent.com/RohanVashisht1234/zigp/refs/heads/main/install_script.sh | bash",
+    }, allocator);
     process.stdout_behavior = .Inherit;
 
     const result = try process.spawnAndWait();
