@@ -28,7 +28,7 @@ pub fn fetch_versions(repo: []const u8, allocator: std.mem.Allocator) !std.Array
     switch (result.status) {
         .ok => {},
         .not_found => {
-            std.debug.print("{s}Error: {s}{s}{s} is not a repo.\n", .{ ansi.RED ++ ansi.BOLD, ansi.BRIGHT_CYAN, repo, ansi.RESET });
+            std.debug.print("{s}Error: {s}\"{s}\"{s} is not a repo.\n", .{ ansi.RED ++ ansi.BOLD, ansi.BRIGHT_CYAN, repo, ansi.RESET });
             return error.invalid_responce;
         },
         else => {

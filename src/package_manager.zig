@@ -11,7 +11,8 @@ const tar_file_url = "https://github.com/{s}/archive/refs/tags/{s}.tar.gz";
 pub fn add_package(repo_name: []const u8, allocator: std.mem.Allocator) !void {
     const stdin = std.fs.File.stdin();
 
-    var versions = try hfs.fetch_versions(repo_name, allocator);
+    var versions = hfs.fetch_versions(repo_name, allocator) catch return;
+
     const items = versions.items;
 
     defer {

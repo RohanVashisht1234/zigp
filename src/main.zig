@@ -48,7 +48,7 @@ pub fn main() !void {
         } else if (eql(args[1], "self-update")) {
             try self_update(allocator);
         } else if (eql(args[1], "version")) {
-            std.debug.print("v0.0.0", .{});
+            std.debug.print("v0.0.0\n", .{});
         } else display.err.unknown_argument(args[1]),
 
         // args[0]  args[1]     args[2]

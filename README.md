@@ -9,7 +9,7 @@ curl -fsSL https://raw.githubusercontent.com/RohanVashisht1234/zigp/refs/heads/m
 In the directory of your zig project, run in your terminal:
 
 ```bash
-zigp add gh/RohanVashisht1234/zorsig
+zigp add gh/<owner-name>/<repo-name>
 
 # Example:
 zigp add gh/capy-ui/capy

@@ -46,6 +46,7 @@ pub const help = struct {
         std.debug.print("{s}╔══════════════════════════════════════════════╗\n", .{ansi.BRIGHT_CYAN});
         std.debug.print("║        Zigistry Install Program Command      ║\n", .{});
         std.debug.print("╚══════════════════════════════════════════════╝{s}\n\n", .{ansi.RESET});
+        std.debug.print("{s}Comming Soon!{s}\n\n", .{ ansi.BOLD ++ ansi.GREEN ++ ansi.UNDERLINE, ansi.RESET });
         std.debug.print("{s}Description:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
         std.debug.print("    The install command is used to install an executable.\n\n", .{});
 
@@ -53,7 +54,7 @@ pub const help = struct {
         std.debug.print("    {s}zigp{s} install {s}<provider-name>/<package-name>{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
 
         std.debug.print("{s}Example:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
-        std.debug.print("    {s}zigp{s} install {s}gh/capy-ui/capy{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("    {s}zigp{s} install {s}gh/{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
         std.debug.print("{s}The above command adds the 'capy' package from GitHub(gh).{s}\n\n", .{ ansi.BRIGHT_WHITE ++ ansi.BOLD, ansi.RESET });
     }
 };
