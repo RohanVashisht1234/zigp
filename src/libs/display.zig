@@ -70,7 +70,10 @@ pub const err = struct {
         std.debug.print("    {s}zigp{s} install/add {s}<provider-name>/<owner-name>/<repo-name>{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
 
         std.debug.print("{s}Example:{s}\n", .{ ansi.BRIGHT_YELLOW ++ ansi.BOLD, ansi.RESET });
-        std.debug.print("    {s}zigp{s} install/add {s}gh/{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("{s}To add a package:{s}\n", .{ ansi.WHITE ++ ansi.BOLD, ansi.RESET });
+        std.debug.print("    {s}zigp{s} add {s}gh/capy-ui/capy{s}\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("{s}To install an application (comming soon):{s}\n", .{ ansi.WHITE ++ ansi.BOLD, ansi.RESET });
+        std.debug.print("    {s}zigp{s} install {s}gh/{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
     }
     pub fn unknown_argument(x: []const u8) void {
         std.debug.print("{s}{s}Unknown argument recieved: {s}{s}\n", .{ ansi.RED, ansi.BOLD, x, ansi.RESET });
