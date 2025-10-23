@@ -61,6 +61,7 @@ pub const help = struct {
 pub const err = struct {
     pub fn unknown_argument(x: []const u8) void {
         std.debug.print("{s}{s}Unknown argument recieved: {s}{s}\n", .{ ansi.RED, ansi.BOLD, x, ansi.RESET });
+        help.all_info();
     }
     pub fn failed_self_update() void {
         std.debug.print("{s}{s}Zigp wasn't able to update itself. Some error occured in the build script.{s}\n", .{ ansi.RED, ansi.BOLD, ansi.RESET });

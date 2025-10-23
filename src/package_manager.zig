@@ -12,15 +12,14 @@ pub fn add_package(repo_name: []const u8, allocator: std.mem.Allocator) !void {
     const stdin = std.fs.File.stdin();
 
     var versions = try hfs.fetch_versions(repo_name, allocator);
+    const items = versions.items;
 
     defer {
-        for (versions.items) |item| {
+        for (items) |item| {
             allocator.free(item);
         }
         versions.deinit(allocator);
     }
-
-    const items = versions.items;
 
     for (items, 1..) |value, i| {
         std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });

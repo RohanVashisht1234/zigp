@@ -1,5 +1,3 @@
-const std = @import("std");
-
 pub const RESET = "\x1b[0m";
 pub const BOLD = "\x1b[1m";
 pub const DIM = "\x1b[2m";
