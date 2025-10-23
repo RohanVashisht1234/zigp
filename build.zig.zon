@@ -1,7 +1,7 @@
 .{
     .name = .zigp,
     .version = "0.0.0",
-    .fingerprint = 0x8c736521b45f0c97,
+    .fingerprint = 0x1879e3171df18555,
     .minimum_zig_version = "0.15.1",
     .dependencies = .{},
     .paths = .{
