@@ -72,6 +72,10 @@ pub fn query_to_repo(query: []const u8) anyerror!types.repository {
     const repo_full_name = iterator.rest();
     const owner = iterator.next() orelse return error.wrong_format;
     const repo_name = iterator.next() orelse return error.wrong_format;
+    const unnesecary_next = iterator.next();
+    if (unnesecary_next) |_| {
+        return error.wrong_format;
+    }
 
     if (std.mem.eql(u8, provider, "gh")) {
         return .{ .owner = owner, .provider = .GitHub, .repo_full_name = repo_full_name, .repo_name = repo_name };
@@ -82,4 +86,70 @@ pub fn query_to_repo(query: []const u8) anyerror!types.repository {
     } else {
         return error.unknown_provider;
     }
+}
+
+pub fn fetch_info_from_github(repo: types.repository, allocator: std.mem.Allocator) !struct { license: []const u8, description: []const u8, topics: std.ArrayList([]const u8) } {
+    switch (repo.provider) {
+        .GitHub => {},
+        else => {
+            @panic("Other providers are comming soon");
+        },
+    }
+
+    var buf: [2000]u8 = undefined;
+
+    const fetch_url = try std.fmt.bufPrintZ(&buf, "https://api.github.com/repos/{s}", .{repo.repo_full_name});
+
+    var client = std.http.Client{ .allocator = allocator };
+    defer client.deinit();
+
+    var response = std.Io.Writer.Allocating.init(allocator);
+    defer response.deinit();
+
+    const result = try client.fetch(.{
+        .location = .{ .url = fetch_url },
+        .response_writer = &response.writer,
+    });
+
+    switch (result.status) {
+        .ok => {},
+        .not_found => {
+            std.debug.print("{s}Error: {s}\"{s}\"{s} is not a repo.\n", .{ ansi.RED ++ ansi.BOLD, ansi.BRIGHT_CYAN, repo.repo_full_name, ansi.RESET });
+            return error.invalid_responce;
+        },
+        else => {
+            std.debug.print("{s}Didn't recieve a responce, please check your internet connection.{s}", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
+            return error.invalid_responce;
+        },
+    }
+
+    const body = response.written();
+
+    if (body.len == 0 or body[0] != '{') {
+        std.debug.print("{s}A non json responce was recieved which is most likely an error, responce recieved:\n{s}", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
+        std.debug.print("{s}\n", .{body});
+        return error.invalid_responce;
+    }
+
+    var json_parsed: std.json.Parsed(std.json.Value) = try std.json.parseFromSlice(std.json.Value, allocator, body, .{});
+    defer json_parsed.deinit();
+    const license = json_parsed.value.object.get("license").?.object.get("key").?.string;
+    const description = if (json_parsed.value.object.get("description").? == .null)
+        "No Description"
+    else
+        json_parsed.value.object.get("description").?.string;
+
+    const topics = json_parsed.value.object.get("topics").?.array;
+
+    var array_list: std.ArrayList([]const u8) = .empty;
+
+    for (topics.items) |topic| {
+        try array_list.append(allocator, try allocator.dupe(u8, topic.string));
+    }
+
+    return .{
+        .license = try allocator.dupe(u8, license),
+        .description = try allocator.dupe(u8, description),
+        .topics = array_list,
+    };
 }

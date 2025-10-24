@@ -3,7 +3,7 @@
 To install run:
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/RohanVashisht1234/zigp/refs/heads/main/install_script.sh | bash
+curl https://raw.githubusercontent.com/rohanvashisht1234/zigp/main/install_script.sh -sSf | sh
 ```
 
 In the directory of your zig project, run in your terminal:

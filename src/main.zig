@@ -12,7 +12,7 @@ fn self_update(allocator: std.mem.Allocator) !void {
     var process = std.process.Child.init(&[_][]const u8{
         "sh",
         "-c",
-        "curl -fsSL https://raw.githubusercontent.com/RohanVashisht1234/zigp/refs/heads/main/install_script.sh | bash",
+        "curl https://raw.githubusercontent.com/rohanvashisht1234/zigp/main/install_script.sh -sSf | sh",
     }, allocator);
     process.stdout_behavior = .Inherit;
 
@@ -103,6 +103,27 @@ pub fn main() !void {
             }
             // ====================================================
             try package_manager.add_package(repo, allocator);
+        } else if (eql(args[1], "info")) {
+            const repo = hfs.query_to_repo(args[2]) catch |err| switch (err) {
+                error.unknown_provider => {
+                    display.err.unknown_provider();
+                    return;
+                },
+                error.wrong_format => {
+                    display.err.wrong_repo_format(args[2]);
+                    return;
+                },
+                else => {
+                    display.err.unknown_argument(args[2]);
+                    return;
+                },
+            };
+
+            if (repo.provider != .GitHub) {
+                display.err.unknown_provider();
+                return;
+            }
+            try package_manager.info(repo, allocator);
         } else display.err.unknown_argument(args[2]),
 
         // args[0]  args[1]     args[2]         args[3]
