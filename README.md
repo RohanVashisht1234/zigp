@@ -79,7 +79,9 @@ zigp self-update
 - [ ] Windows
 
 ### Shells:
-- [x]
+- [x] Bash
+- [x] Zsh
+- [x] sh
 
 #### Testing:
 - [x] Macos
