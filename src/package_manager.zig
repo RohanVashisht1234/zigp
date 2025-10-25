@@ -74,7 +74,15 @@ pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
         var process = std.process.Child.init(&[_][]const u8{ "zig", "fetch", "--save", tag_to_install }, std.heap.c_allocator);
         const term = try process.spawnAndWait();
         switch (term.Exited) {
-            0 => std.debug.print("{s}Successfully installed {s}.{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, repo.repo_full_name, ansi.RESET }),
+            0 => {
+                std.debug.print("{s}Successfully installed {s}.{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, repo.repo_full_name, ansi.RESET });
+                std.debug.print("{s}✧ Suggestion:{s}\n", .{ ansi.BRIGHT_MAGENTA ++ ansi.BOLD, ansi.RESET });
+                std.debug.print("You can add these lines to your build.zig (just above the b.installArtifact(exe) line).\n\n", .{});
+                const suggestor =
+                    ansi.BRIGHT_BLUE ++ "const" ++ ansi.BRIGHT_CYAN ++ " {s} " ++ ansi.RESET ++ "= " ++ ansi.BRIGHT_CYAN ++ "b" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_YELLOW ++ "dependency" ++ ansi.RESET ++ "(" ++ ansi.BRIGHT_GREEN ++ "\"{s}\"" ++ ansi.RESET ++ ", ." ++ ansi.BRIGHT_MAGENTA ++ "{{}}" ++ ansi.RESET ++ ");" ++ "\n" ++
+                    ansi.BRIGHT_CYAN ++ "exe" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_BLUE ++ "root_module" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_YELLOW ++ "addImport" ++ ansi.RESET ++ "(" ++ ansi.BRIGHT_GREEN ++ "\"{s}\"" ++ ansi.RESET ++ "," ++ ansi.BRIGHT_CYAN ++ " {s}" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_YELLOW ++ "module" ++ ansi.RESET ++ "(" ++ ansi.BRIGHT_GREEN ++ "\"{s}\"" ++ ansi.RESET ++ "));\n";
+                std.debug.print(suggestor, .{ repo.repo_name, repo.repo_name, repo.repo_name, repo.repo_name, repo.repo_name });
+            },
             1 => std.debug.print("{s}Zig fetch returned an error. The process returned 1 exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET }),
             else => std.debug.print("{s}Zig fetch returned an unknown error. It returned {} exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, term.Exited, ansi.RESET }),
         }
@@ -84,6 +92,14 @@ pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
 
 pub fn info(repo: types.repository, allocator: std.mem.Allocator) !void {
     var versions = try hfs.fetch_versions(repo, allocator);
+    defer {
+        const items = versions.items;
+        for (items) |item| {
+            allocator.free(item);
+        }
+        versions.deinit(allocator);
+    }
+
     var github_info = try hfs.fetch_info_from_github(repo, allocator);
     defer {
         allocator.free(github_info.license);
@@ -94,13 +110,6 @@ pub fn info(repo: types.repository, allocator: std.mem.Allocator) !void {
         }
         github_info.topics.deinit(allocator);
     }
-    defer {
-        const items = versions.items;
-        for (items) |item| {
-            allocator.free(item);
-        }
-        versions.deinit(allocator);
-    }
 
     const version = switch (versions.items.len) {
         1 => "latest (unstable) no releases found.",
@@ -109,7 +118,7 @@ pub fn info(repo: types.repository, allocator: std.mem.Allocator) !void {
     std.debug.print("{s}{s}{s}", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, repo.repo_full_name, ansi.RESET });
     for (github_info.topics.items, 1..) |topic, i| {
         if (i == 6) break;
-        std.debug.print("{s} #{s}{s}  ", .{ ansi.BRIGHT_CYAN ++ ansi.UNDERLINE ++ ansi.BOLD, topic, ansi.RESET });
+        std.debug.print(" {s}#{s}{s}", .{ ansi.BRIGHT_CYAN ++ ansi.UNDERLINE ++ ansi.BOLD, topic, ansi.RESET });
     }
     std.debug.print("\n", .{});
     std.debug.print("{s}\n", .{github_info.description});
@@ -117,6 +126,18 @@ pub fn info(repo: types.repository, allocator: std.mem.Allocator) !void {
     std.debug.print("{s}version{s}: {s}{s}{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, ansi.RESET, ansi.BOLD ++ ansi.BRIGHT_YELLOW, version, ansi.RESET });
     std.debug.print("{s}repository{s}: https://github.com/{s}{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, ansi.RESET, repo.repo_full_name, ansi.RESET });
     std.debug.print("{s}zigistry.dev{s}: https://zigistry.dev/{s}/{s}/{s}{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, ansi.RESET, "packages", "github", repo.repo_full_name, ansi.RESET });
+}
+
+pub fn update_packages(_: std.mem.Allocator) !void {
+    // const file = try std.fs.cwd().openFile("./build.zig.zon", .{});
+    // defer file.close();
+
+    // // Read entire file into memory
+    // const data = try file.readToEndAlloc(allocator, std.math.maxInt(usize));
+    // defer allocator.free(data);
+
+    // const parser = try std.zon.parse.fromSlice(std.zon.Serializer, allocator, data, .{}, .{});
+    // parser.beginStruct(.{});
 }
 
 pub fn install_app(_: types.repository, _: std.mem.Allocator) !void {
