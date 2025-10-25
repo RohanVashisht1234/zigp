@@ -14,6 +14,8 @@ pub fn build(b: *std.Build) void {
         }),
     });
 
+    exe.linkLibC();
+
     b.installArtifact(exe);
 
     const run_step = b.step("run", "Run the app");
