@@ -85,8 +85,8 @@ zigp self-update
 
 #### Testing:
 - [x] Macos
+- [x] Linux
 - [ ] Windows
-- [ ] Linux
 - [ ] WSL
 
 ### Miscelanious:
