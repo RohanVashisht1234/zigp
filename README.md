@@ -6,7 +6,10 @@ To install run:
 curl https://raw.githubusercontent.com/rohanvashisht1234/zigp/main/install_script.sh -sSf | sh
 ```
 
-In the directory of your zig project, run in your terminal:
+
+### What all can this do right now?
+
+#### Adding a package to your zig project:
 
 ```bash
 zigp add gh/<owner-name>/<repo-name>
@@ -14,3 +17,13 @@ zigp add gh/<owner-name>/<repo-name>
 # Example:
 zigp add gh/capy-ui/capy
 ```
+
+#### Installing a project as a binary file:
+
+```bash
+zigp install gh/<owner-name>/<repo-name>
+
+# Example:
+zigp install gh/zigtools/zls
+```
+

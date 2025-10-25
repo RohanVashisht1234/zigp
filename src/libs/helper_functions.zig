@@ -8,12 +8,12 @@ const tar_file_url = "https://github.com/{s}/archive/refs/tags/{s}.tar.gz";
 
 pub fn fetch_versions(repo: types.repository, allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
     // I am doing -2 for making sure {} is not included.
-    if (url.len + repo.repo_full_name.len - 2 > MAX_ALLOWED_REPO_NAME_LENGTH) {
+    if (url.len + repo.full_name.len - 2 > MAX_ALLOWED_REPO_NAME_LENGTH) {
         @panic("The length of repo name is way too much long.");
     }
 
     var buf: [MAX_ALLOWED_REPO_NAME_LENGTH]u8 = undefined;
-    const fetch_url = try std.fmt.bufPrintZ(&buf, url, .{repo.repo_full_name});
+    const fetch_url = try std.fmt.bufPrintZ(&buf, url, .{repo.full_name});
 
     var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
@@ -29,7 +29,7 @@ pub fn fetch_versions(repo: types.repository, allocator: std.mem.Allocator) !std
     switch (result.status) {
         .ok => {},
         .not_found => {
-            std.debug.print("{s}Error: {s}\"{s}\"{s} is not a repo.\n", .{ ansi.RED ++ ansi.BOLD, ansi.BRIGHT_CYAN, repo.repo_full_name, ansi.RESET });
+            std.debug.print("{s}Error: {s}\"{s}\"{s} is not a repo.\n", .{ ansi.RED ++ ansi.BOLD, ansi.BRIGHT_CYAN, repo.full_name, ansi.RESET });
             return error.invalid_responce;
         },
         else => {
@@ -78,11 +78,11 @@ pub fn query_to_repo(query: []const u8) anyerror!types.repository {
     }
 
     if (std.mem.eql(u8, provider, "gh")) {
-        return .{ .owner = owner, .provider = .GitHub, .repo_full_name = repo_full_name, .repo_name = repo_name };
+        return .{ .owner = owner, .provider = .GitHub, .full_name = repo_full_name, .name = repo_name };
     } else if (std.mem.eql(u8, provider, "cb")) {
-        return .{ .owner = owner, .provider = .CodeBerg, .repo_full_name = repo_full_name, .repo_name = repo_name };
+        return .{ .owner = owner, .provider = .CodeBerg, .full_name = repo_full_name, .name = repo_name };
     } else if (std.mem.eql(u8, provider, "gl")) {
-        return .{ .owner = owner, .provider = .GitLab, .repo_full_name = repo_full_name, .repo_name = repo_name };
+        return .{ .owner = owner, .provider = .GitLab, .full_name = repo_full_name, .name = repo_name };
     } else {
         return error.unknown_provider;
     }
@@ -98,7 +98,7 @@ pub fn fetch_info_from_github(repo: types.repository, allocator: std.mem.Allocat
 
     var buf: [2000]u8 = undefined;
 
-    const fetch_url = try std.fmt.bufPrintZ(&buf, "https://api.github.com/repos/{s}", .{repo.repo_full_name});
+    const fetch_url = try std.fmt.bufPrintZ(&buf, "https://api.github.com/repos/{s}", .{repo.full_name});
 
     var client = std.http.Client{ .allocator = allocator };
     defer client.deinit();
@@ -114,7 +114,7 @@ pub fn fetch_info_from_github(repo: types.repository, allocator: std.mem.Allocat
     switch (result.status) {
         .ok => {},
         .not_found => {
-            std.debug.print("{s}Error: {s}\"{s}\"{s} is not a repo.\n", .{ ansi.RED ++ ansi.BOLD, ansi.BRIGHT_CYAN, repo.repo_full_name, ansi.RESET });
+            std.debug.print("{s}Error: {s}\"{s}\"{s} is not a repo.\n", .{ ansi.RED ++ ansi.BOLD, ansi.BRIGHT_CYAN, repo.full_name, ansi.RESET });
             return error.invalid_responce;
         },
         else => {
