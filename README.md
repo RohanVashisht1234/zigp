@@ -45,6 +45,8 @@ zigp self-update
 ### Zig Packages:
 - [x] Add
 - [x] Add specific version
+    - [x] Menu Driven (Choose the version to add from options)
+    - [ ] Direct addition like capy-ui/capy@latest
 - [x] Check Info
 - [ ] Update
 - [ ] Remove
@@ -52,14 +54,21 @@ zigp self-update
 ### Zig applications:
 - Installing:
     - [x] Specific version
-    - [x] CLI tools
-    - [ ] Complete Applications
+        - [x] Menu Driven (Choose the version to install from options)
+        - [ ] Direct addition like zigtools/zls@latest
+    - [x] CLI tools (with exporting them to $PATH)
+    - [ ] Complete Applications (--cask option to be implemented)
 - Updating:
     - [ ] CLI tools
-    - [ ] Complete Applications
+    - [ ] Complete Applications (--cask option to be implemented)
 - Removing:
     - [ ] CLI tools
-    - [ ] Complete Applications
+    - [ ] Complete Applications (--cask option to be implemented)
+
+### Providers:
+- [x] GitHub
+- [ ] CodeBerg
+- [ ] GitLab
 
 ### Operating Systems:
 
@@ -68,6 +77,9 @@ zigp self-update
 - [x] Linux
 - [x] WSL
 - [ ] Windows
+
+### Shells:
+- [x]
 
 #### Testing:
 - [x] Macos
