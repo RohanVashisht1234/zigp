@@ -3,7 +3,7 @@
 To install run:
 
 ```bash
-curl https://raw.githubusercontent.com/rohanvashisht1234/zigp/main/install_script.sh -sSf | sh
+curl https://raw.githubusercontent.com/zigistry/zigp/main/install_script.sh -sSf | sh
 ```
 
 ### What all can this do right now?
