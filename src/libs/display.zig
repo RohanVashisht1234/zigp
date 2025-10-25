@@ -51,7 +51,7 @@ pub const help = struct {
         std.debug.print("    The install command is used to install an executable.\n\n", .{});
 
         std.debug.print("{s}Syntax:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
-        std.debug.print("    {s}zigp{s} install {s}<provider-name>/<package-name>{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("    {s}zigp{s} install {s}<provider-name>/<owner-name>/<repo-name>{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
 
         std.debug.print("{s}Example:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
         std.debug.print("    {s}zigp{s} install {s}gh/zigtools/zls{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });

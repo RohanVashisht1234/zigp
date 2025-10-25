@@ -18,7 +18,7 @@ zigp add gh/<owner-name>/<repo-name>
 zigp add gh/capy-ui/capy
 ```
 
-#### Installing a project as a binary file:
+#### Installing a program as a binary file (This will also export it to your $PATH):
 
 ```bash
 zigp install gh/<owner-name>/<repo-name>
@@ -27,3 +27,16 @@ zigp install gh/<owner-name>/<repo-name>
 zigp install gh/zigtools/zls
 ```
 
+#### Seeing info of a specific repository
+
+```bash
+zigp info gh/<owner-name>/<repo-name>
+
+# Example:
+zigp info gh/zigtools/zls
+```
+#### Self updating zigp to the latest version
+
+```bash
+zigp self-update
+```
