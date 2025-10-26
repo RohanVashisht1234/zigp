@@ -2,7 +2,7 @@
 
 <center>
 
-![alt](./docs/Zigp.png)
+<img alt="alt" src="./docs/Zigp.png" width=500/>
 
 </center>
 
