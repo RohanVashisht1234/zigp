@@ -1,5 +1,11 @@
 # Experimental Zig CLI package manager
 
+<center>
+
+![alt](./docs/Zigp.png)
+
+</center>
+
 To install run:
 
 ```bash

@@ -71,7 +71,7 @@ pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
 
         std.debug.print("{s}Adding package: {s}{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.UNDERLINE, items[number - 1], ansi.RESET });
 
-        var process = std.process.Child.init(&[_][]const u8{ "zig", "fetch", "--save", tag_to_install }, std.heap.c_allocator);
+        var process = std.process.Child.init(&[_][]const u8{ "zig", "fetch", "--save", tag_to_install }, allocator);
         const term = try process.spawnAndWait();
         switch (term.Exited) {
             0 => {
@@ -199,7 +199,7 @@ pub fn install_app(repo: types.repository, allocator: std.mem.Allocator) !void {
         };
         if (tag_to_install) |tag_to_install_not_null| {
             std.debug.print("{s}Installing application: {s}{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.UNDERLINE, items[number - 1], ansi.RESET });
-            const sh = try std.fmt.allocPrint(std.heap.c_allocator,
+            const sh = try std.fmt.allocPrint(allocator,
                 \\export TMP_DIR=$(mktemp -d) &&
                 \\echo "Created: $TMP_DIR" &&
                 \\cd "$TMP_DIR" || exit 1 &&
@@ -207,7 +207,8 @@ pub fn install_app(repo: types.repository, allocator: std.mem.Allocator) !void {
                 \\cd {s} || exit 1
                 \\zig build install --prefix $HOME/.local/zigp
             , .{ repo.full_name, tag_to_install_not_null, repo.name });
-            var process = std.process.Child.init(&[_][]const u8{ "sh", "-c", sh }, std.heap.c_allocator);
+            defer allocator.free(sh);
+            var process = std.process.Child.init(&[_][]const u8{ "sh", "-c", sh }, allocator);
             const term = try process.spawnAndWait();
             switch (term.Exited) {
                 0 => {},
@@ -222,7 +223,7 @@ pub fn install_app(repo: types.repository, allocator: std.mem.Allocator) !void {
             }
         } else {
             std.debug.print("{s}Installing application: {s}{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.UNDERLINE, items[number - 1], ansi.RESET });
-            const sh = try std.fmt.allocPrint(std.heap.c_allocator,
+            const sh = try std.fmt.allocPrint(allocator,
                 \\export TMP_DIR=$(mktemp -d) &&
                 \\echo "Created: $TMP_DIR" &&
                 \\cd "$TMP_DIR" || exit 1 &&
@@ -230,7 +231,8 @@ pub fn install_app(repo: types.repository, allocator: std.mem.Allocator) !void {
                 \\cd {s} || exit 1
                 \\zig build install --prefix $HOME/.local/zigp
             , .{ repo.full_name, repo.name });
-            var process = std.process.Child.init(&[_][]const u8{ "sh", "-c", sh }, std.heap.c_allocator);
+            defer allocator.free(sh);
+            var process = std.process.Child.init(&[_][]const u8{ "sh", "-c", sh }, allocator);
             const term = try process.spawnAndWait();
             switch (term.Exited) {
                 0 => {},
@@ -253,7 +255,7 @@ pub fn install_app(repo: types.repository, allocator: std.mem.Allocator) !void {
             \\
         ;
 
-        var process = std.process.Child.init(&[_][]const u8{ "sh", "-c", path_export }, std.heap.c_allocator);
+        var process = std.process.Child.init(&[_][]const u8{ "sh", "-c", path_export }, allocator);
         const term = try process.spawnAndWait();
 
         switch (term.Exited) {

@@ -14,7 +14,6 @@ fn self_update(allocator: std.mem.Allocator) !void {
         "-c",
         "curl https://raw.githubusercontent.com/zigistry/zigp/main/install_script.sh -sSf | sh",
     }, allocator);
-    process.stdout_behavior = .Inherit;
 
     const result = try process.spawnAndWait();
     switch (result.Exited) {

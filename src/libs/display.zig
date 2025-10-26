@@ -3,9 +3,9 @@ const ansi = @import("./ansi_codes.zig");
 
 pub const help = struct {
     pub fn all_info() void {
-        std.debug.print("{s}╔══════════════════════════════════════════════════════╗{s}\n", .{ ansi.BRIGHT_CYAN, ansi.RESET });
-        std.debug.print("{s}║               Welcome to Zigistry-CLI!               ║{s}\n", .{ ansi.BRIGHT_CYAN, ansi.RESET });
-        std.debug.print("{s}╚══════════════════════════════════════════════════════╝{s}\n\n", .{ ansi.BRIGHT_CYAN, ansi.RESET });
+        std.debug.print("{s}╔══════════════════════════════════════════╗\n", .{ansi.BRIGHT_CYAN});
+        std.debug.print("║         Welcome to Zigistry-CLI!         ║\n", .{});
+        std.debug.print("╚══════════════════════════════════════════╝{s}\n\n", .{ansi.RESET});
 
         std.debug.print("{s}Here are some commands you can use:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
         std.debug.print("{s}--------------------------------------------------------{s}\n", .{ ansi.BRIGHT_WHITE, ansi.RESET });
@@ -15,6 +15,11 @@ pub const help = struct {
         std.debug.print("{s}--------------------------------------------------------{s}\n", .{ ansi.BRIGHT_WHITE, ansi.RESET });
 
         std.debug.print("{s}install{s}      - Install a zig program (i.e application).\n", .{ ansi.BRIGHT_GREEN, ansi.RESET });
+        std.debug.print("    Example: {s}zigp{s} install {s}gh/zigtools/zls{s}\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_WHITE, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("{s}--------------------------------------------------------{s}\n", .{ ansi.BRIGHT_WHITE, ansi.RESET });
+
+        std.debug.print("{s}info{s}      - Display the info of a repository.\n", .{ ansi.BRIGHT_GREEN, ansi.RESET });
+        std.debug.print("    Example: {s}zigp{s} info {s}gh/zigtools/zls{s}\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_WHITE, ansi.BRIGHT_MAGENTA, ansi.RESET });
         std.debug.print("{s}--------------------------------------------------------{s}\n", .{ ansi.BRIGHT_WHITE, ansi.RESET });
 
         std.debug.print("{s}version{s}      - Display the version of zigp.\n", .{ ansi.BRIGHT_GREEN, ansi.RESET });
@@ -27,9 +32,9 @@ pub const help = struct {
     }
 
     pub fn add_info() void {
-        std.debug.print("{s}╔══════════════════════════════════════════════╗\n", .{ansi.BRIGHT_CYAN});
-        std.debug.print("║          Zigistry Add Package Command        ║\n", .{});
-        std.debug.print("╚══════════════════════════════════════════════╝{s}\n\n", .{ansi.RESET});
+        std.debug.print("{s}╔════════════════════════════════════════════╗\n", .{ansi.BRIGHT_CYAN});
+        std.debug.print("║        Zigistry Add Package Command        ║\n", .{});
+        std.debug.print("╚════════════════════════════════════════════╝{s}\n\n", .{ansi.RESET});
 
         std.debug.print("{s}Description:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
         std.debug.print("    The add command is used to add a package into your Zig project.\n\n", .{});
@@ -43,9 +48,9 @@ pub const help = struct {
     }
 
     pub fn install_info() void {
-        std.debug.print("{s}╔══════════════════════════════════════════════╗\n", .{ansi.BRIGHT_CYAN});
-        std.debug.print("║        Zigistry Install Program Command      ║\n", .{});
-        std.debug.print("╚══════════════════════════════════════════════╝{s}\n\n", .{ansi.RESET});
+        std.debug.print("{s}╔════════════════════════════════════════════╗\n", .{ansi.BRIGHT_CYAN});
+        std.debug.print("║      Zigistry Install Program Command      ║\n", .{});
+        std.debug.print("╚════════════════════════════════════════════╝{s}\n\n", .{ansi.RESET});
         std.debug.print("{s}Comming Soon!{s}\n\n", .{ ansi.BOLD ++ ansi.GREEN ++ ansi.UNDERLINE, ansi.RESET });
         std.debug.print("{s}Description:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
         std.debug.print("    The install command is used to install an executable.\n\n", .{});
@@ -55,7 +60,7 @@ pub const help = struct {
 
         std.debug.print("{s}Example:{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.RESET });
         std.debug.print("    {s}zigp{s} install {s}gh/zigtools/zls{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
-        std.debug.print("{s}The above command adds the 'capy' package from GitHub(gh).{s}\n\n", .{ ansi.BRIGHT_WHITE ++ ansi.BOLD, ansi.RESET });
+        std.debug.print("{s}The above command installs 'zls' from GitHub(gh) on your system and exports it to your $PATH.{s}\n\n", .{ ansi.BRIGHT_WHITE ++ ansi.BOLD, ansi.RESET });
     }
 };
 
@@ -67,13 +72,15 @@ pub const err = struct {
 
         std.debug.print("{s}Correct format: {s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
 
-        std.debug.print("    {s}zigp{s} install/add {s}<provider-name>/<owner-name>/<repo-name>{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("    {s}zigp{s} install/add/info {s}<provider-name>/<owner-name>/<repo-name>{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
 
         std.debug.print("{s}Example:{s}\n", .{ ansi.BRIGHT_YELLOW ++ ansi.BOLD, ansi.RESET });
         std.debug.print("{s}To add a package:{s}\n", .{ ansi.WHITE ++ ansi.BOLD, ansi.RESET });
         std.debug.print("    {s}zigp{s} add {s}gh/capy-ui/capy{s}\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
-        std.debug.print("{s}To install an application (comming soon):{s}\n", .{ ansi.WHITE ++ ansi.BOLD, ansi.RESET });
+        std.debug.print("{s}To install an application:{s}\n", .{ ansi.WHITE ++ ansi.BOLD, ansi.RESET });
         std.debug.print("    {s}zigp{s} install {s}gh/zigtools/zls{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
+        std.debug.print("{s}To get info of a repository:{s}\n", .{ ansi.WHITE ++ ansi.BOLD, ansi.RESET });
+        std.debug.print("    {s}zigp{s} info {s}gh/zigtools/zls{s}\n\n", .{ ansi.BRIGHT_MAGENTA, ansi.BRIGHT_GREEN, ansi.BRIGHT_MAGENTA, ansi.RESET });
     }
     pub fn unknown_argument(x: []const u8) void {
         std.debug.print("{s}{s}Unknown argument recieved: {s}{s}\n", .{ ansi.RED, ansi.BOLD, x, ansi.RESET });
