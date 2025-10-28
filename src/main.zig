@@ -25,12 +25,12 @@ fn self_update(allocator: std.mem.Allocator) !void {
 
 pub fn main() !void {
     // allocator
-    var gpa = std.heap.GeneralPurposeAllocator(.{}){};
-    const allocator = gpa.allocator();
-    defer {
-        const deinit_status = gpa.deinit();
-        if (deinit_status == .leak) @panic("Memory got leaked.");
-    }
+    // var gpa = std.heap.GeneralPurposeAllocator(.{}){};
+    const allocator = std.heap.c_allocator;
+    // defer {
+    //     const deinit_status = gpa.deinit();
+    //     if (deinit_status == .leak) @panic("Memory got leaked.");
+    // }
 
     // arguments
     const args = try std.process.argsAlloc(allocator);
@@ -80,6 +80,10 @@ pub fn main() !void {
             }
             // ====================================================
             try package_manager.install_app(repo, allocator);
+        } else if (eql(args[1], "update")) {
+            if (eql(args[2], "all")) {
+                try package_manager.update_packages(allocator);
+            }
         } else if (eql(args[1], "add")) {
             const repo = hfs.query_to_repo(args[2]) catch |err| switch (err) {
                 error.unknown_provider => {

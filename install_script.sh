@@ -11,7 +11,7 @@ git clone https://github.com/rohanvashisht1234/zigp --depth=1
 cd zigp
 
 echo "Installing zigp..."
-zig build install --prefix "$HOME/.local"
+zig build -Doptimize=ReleaseFast install --prefix "$HOME/.local"
 
 if [[ ":$PATH:" != *":$HOME/.local/bin:"* ]]; then
     echo 'export PATH="$HOME/.local/bin:$PATH"' >>~/.bashrc 2>/dev/null || true

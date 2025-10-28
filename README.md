@@ -1,10 +1,10 @@
 # Experimental Zig CLI package manager
 
-<center>
+<div align="center">
 
 <img alt="alt" src="./docs/Zigp.png" width=500/>
 
-</center>
+</div>
 
 To install run:
 
