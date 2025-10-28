@@ -23,6 +23,12 @@ zigp add gh/<owner-name>/<repo-name>
 zigp add gh/capy-ui/capy
 ```
 
+#### Updating your zig project's build.zig.zon:
+
+```bash
+zigp update all
+```
+
 #### Installing a program as a binary file (This will also export it to your $PATH):
 
 ```bash
@@ -54,7 +60,10 @@ zigp self-update
     - [x] Menu Driven (Choose the version to add from options)
     - [ ] Direct addition like capy-ui/capy@latest
 - [x] Check Info
-- [ ] Update
+- [x] Update
+    - [x] Update packages commit
+    - [x] Update packages to the latest release if using releases.
+    - [ ] Update specific packages.
 - [ ] Remove
 
 ### Zig applications:
