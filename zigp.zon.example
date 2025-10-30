@@ -10,7 +10,6 @@
 // "#tag_name" = "A static release with non-SemVer based name like 'tag_name' branch (used when package is not using SemVer but names of tags)."
 
 .{
-    .zigp_zon_version = "1",
     .zigp_version = "0.0.0",
     .zig_version = "0.15.2",
     .last_updated = "",

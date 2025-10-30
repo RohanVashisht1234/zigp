@@ -13,23 +13,35 @@ pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
     const stdin = std.fs.File.stdin();
 
     var versions = hfs.fetch_versions(repo, allocator) catch return;
-
-    const items = versions.items;
+    const versions_list = versions.items;
 
     defer {
-        for (items) |item| {
+        for (versions_list) |item| {
             allocator.free(item);
         }
         versions.deinit(allocator);
     }
 
+    var branches = try hfs.fetch_branches(repo, allocator);
+    const branches_list = branches.items;
+
+    defer {
+        for (branches_list) |item| {
+            allocator.free(item);
+        }
+        branches.deinit(allocator);
+    }
+
     std.debug.print("{s}Installing {s}{s}{s}\n", .{ ansi.YELLOW, ansi.UNDERLINE, repo.full_name, ansi.RESET });
     std.debug.print("{s}Please select the version you want to install (type the index number):{s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
 
-    for (items, 1..) |value, i| {
+    std.debug.print("1){s} Install a branch{s}\n", .{ ansi.BOLD, ansi.RESET });
+    if (versions_list.len == 0) {
+        std.debug.print("{s}Info:{s} This package has no releases.\n", .{ ansi.BRIGHT_CYAN, ansi.RESET });
+    }
+    for (versions_list, 2..) |value, i| {
         std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });
     }
-
     outer: while (true) {
         std.debug.print("{s}>>>{s} ", .{ ansi.BRIGHT_CYAN, ansi.RESET });
 
@@ -57,19 +69,94 @@ pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
 
         const number = try std.fmt.parseInt(u16, input, 10);
 
-        if (number < 1 or number > items.len) {
+        if (number < 1 or number > versions_list.len + 1) {
             std.debug.print("{s}Error:{s} Number selection is out of range.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
             continue;
         }
 
         var buf2: [2500]u8 = undefined;
 
-        const tag_to_install = if (number == 1)
-            try std.fmt.bufPrintZ(&buf2, "git+https://github.com/{s}", .{repo.full_name})
-        else
-            try std.fmt.bufPrintZ(&buf2, tar_file_url, .{ repo.full_name, items[number - 1] });
+        if (number == 1) {
+            std.debug.print("{s}Please select the branch you want to install (type the index number):{s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
+            std.debug.print("1){s} Master Branch {s}\n", .{ ansi.BOLD, ansi.RESET });
+            for (branches_list, 2..) |value, i| {
+                std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });
+            }
+            inner: while (true) {
+                std.debug.print("{s}>>>{s} ", .{ ansi.BRIGHT_CYAN, ansi.RESET });
 
-        std.debug.print("{s}Adding package: {s}{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.UNDERLINE, items[number - 1], ansi.RESET });
+                var buf3: [16]u8 = undefined;
+
+                const len3 = try stdin.read(&buf3);
+
+                var input3 = buf3[0..len3];
+                std.debug.print("|{s}|", .{input3});
+
+                if (input.len == 0) {
+                    std.debug.print("{s}Error:{s} No input entered.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
+                    continue :inner;
+                }
+
+                if (input3.len > 0 and (input3[input3.len - 1] == '\n' or input3[input3.len - 1] == '\r')) {
+                    input3 = input3[0 .. input3.len - 1];
+                }
+
+                for (input3) |char| {
+                    if (!std.ascii.isDigit(char)) {
+                        std.debug.print("{s}Error:{s} Non charater input recieved.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
+                        continue :inner;
+                    }
+                }
+
+                const number3 = try std.fmt.parseInt(u16, input3, 10);
+
+                if (number3 < 1 or number3 > branches_list.len) {
+                    std.debug.print("{s}Error:{s} Number selection is out of range.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
+                    continue :inner;
+                }
+                const to_fetch = try std.fmt.bufPrintZ(&buf2, "git+https://github.com/{s}#{s}", .{ repo.full_name, branches_list[number3 - 1] });
+                // check if that file exists:
+                var new_process2 = std.process.Child.init(&[_][]const u8{ "zig", "fetch", to_fetch }, allocator);
+                new_process2.stdout_behavior = .Pipe;
+                try new_process2.spawn();
+                const asdf = try new_process2.stdout.?.readToEndAlloc(allocator, std.math.maxInt(usize));
+                const new_terminal2 = try new_process2.wait();
+                switch (new_terminal2.Exited) {
+                    0 => {
+                        std.debug.print("This is the thing: {s}", .{asdf});
+                        // I will parse asdf to get the dependency's name and version!!!
+                    },
+                    else => {
+                        std.debug.print("Fetch returned some error", .{});
+                        return;
+                    },
+                }
+
+                var new_process = std.process.Child.init(&[_][]const u8{ "zig", "fetch", "--save", to_fetch }, allocator);
+                const new_term = try new_process.spawnAndWait();
+                switch (new_term.Exited) {
+                    0 => {
+                        std.debug.print("{s}Successfully installed {s}.{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, repo.full_name, ansi.RESET });
+                        std.debug.print("{s}✧ Suggestion:{s}\n", .{ ansi.BRIGHT_MAGENTA ++ ansi.BOLD, ansi.RESET });
+                        std.debug.print("You can add these lines to your build.zig (just above the b.installArtifact(exe) line).\n\n", .{});
+                        const suggestor =
+                            ansi.BRIGHT_BLUE ++ "const" ++ ansi.BRIGHT_CYAN ++ " {s} " ++ ansi.RESET ++ "= " ++ ansi.BRIGHT_CYAN ++ "b" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_YELLOW ++ "dependency" ++ ansi.RESET ++ "(" ++ ansi.BRIGHT_GREEN ++ "\"{s}\"" ++ ansi.RESET ++ ", ." ++ ansi.BRIGHT_MAGENTA ++ "{{}}" ++ ansi.RESET ++ ");" ++ "\n" ++
+                            ansi.BRIGHT_CYAN ++ "exe" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_BLUE ++ "root_module" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_YELLOW ++ "addImport" ++ ansi.RESET ++ "(" ++ ansi.BRIGHT_GREEN ++ "\"{s}\"" ++ ansi.RESET ++ "," ++ ansi.BRIGHT_CYAN ++ " {s}" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_YELLOW ++ "module" ++ ansi.RESET ++ "(" ++ ansi.BRIGHT_GREEN ++ "\"{s}\"" ++ ansi.RESET ++ "));\n";
+                        std.debug.print(suggestor, .{ repo.name, repo.name, repo.name, repo.name, repo.name });
+                    },
+                    1 => std.debug.print("{s}Zig fetch returned an error. The process returned 1 exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET }),
+                    else => std.debug.print("{s}Zig fetch returned an unknown error. It returned {} exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, new_term.Exited, ansi.RESET }),
+                }
+                return;
+            }
+        }
+
+        const tag_to_install = if (number == 1)
+            try std.fmt.bufPrintZ(&buf2, "git+https://github.com/{s}?ref=", .{repo.full_name})
+        else
+            try std.fmt.bufPrintZ(&buf2, tar_file_url, .{ repo.full_name, versions_list[number - 1] });
+
+        std.debug.print("{s}Adding package: {s}{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.UNDERLINE, versions_list[number - 1], ansi.RESET });
 
         var process = std.process.Child.init(&[_][]const u8{ "zig", "fetch", "--save", tag_to_install }, allocator);
         const term = try process.spawnAndWait();
@@ -139,7 +226,7 @@ pub fn update_packages(allocator: std.mem.Allocator) !void {
     const new_string = try allocator.dupeZ(u8, data);
     defer allocator.free(new_string);
 
-    var parsed = try hfs.parseBuildZigZon(allocator, new_string);
+    var parsed = try hfs.parse_build_zig_zon(allocator, new_string);
     defer {
         if (parsed.name) |name| allocator.free(name);
         if (parsed.version) |version| allocator.free(version);
