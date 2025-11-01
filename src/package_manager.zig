@@ -10,8 +10,6 @@ const tar_file_url = "https://github.com/{s}/archive/refs/tags/{s}.tar.gz";
 // https://github.com/{}/archive/refs/tags/{}.tar.gz
 
 pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
-    const stdin = std.fs.File.stdin();
-
     var versions = hfs.fetch_versions(repo, allocator) catch return;
     const versions_list = versions.items;
 
@@ -34,7 +32,6 @@ pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
 
     std.debug.print("{s}Installing {s}{s}{s}\n", .{ ansi.YELLOW, ansi.UNDERLINE, repo.full_name, ansi.RESET });
     std.debug.print("{s}Please select the version you want to install (type the index number):{s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
-
     std.debug.print("1){s} Install a branch{s}\n", .{ ansi.BOLD, ansi.RESET });
     if (versions_list.len == 0) {
         std.debug.print("{s}Info:{s} This package has no releases.\n", .{ ansi.BRIGHT_CYAN, ansi.RESET });
@@ -42,123 +39,140 @@ pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
     for (versions_list, 2..) |value, i| {
         std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });
     }
-    outer: while (true) {
+
+    const user_select_number = while (true) {
         std.debug.print("{s}>>>{s} ", .{ ansi.BRIGHT_CYAN, ansi.RESET });
 
-        var buf: [16]u8 = undefined;
+        const user_select_number = hfs.read_integer() catch {
+            std.debug.print("{s}Invalid input recieved.{s}", .{ ansi.BRIGHT_RED, ansi.RESET });
+            continue;
+        };
 
-        const len = try stdin.read(&buf);
-
-        var input = buf[0..len];
-
-        if (input.len == 0) {
-            std.debug.print("{s}Error:{s} No input entered.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
-            continue :outer;
-        }
-
-        if (input.len > 0 and (input[input.len - 1] == '\n' or input[input.len - 1] == '\r')) {
-            input = input[0 .. input.len - 1];
-        }
-
-        for (input) |char| {
-            if (!std.ascii.isDigit(char)) {
-                std.debug.print("{s}Error:{s} Non charater input recieved.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
-                continue :outer;
-            }
-        }
-
-        const number = try std.fmt.parseInt(u16, input, 10);
-
-        if (number < 1 or number > versions_list.len + 1) {
+        if (user_select_number < 1 or user_select_number > versions_list.len + 1) {
             std.debug.print("{s}Error:{s} Number selection is out of range.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
             continue;
         }
 
-        var buf2: [2500]u8 = undefined;
+        break user_select_number;
+    };
 
-        if (number == 1) {
-            std.debug.print("{s}Please select the branch you want to install (type the index number):{s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
-            std.debug.print("1){s} Master Branch {s}\n", .{ ansi.BOLD, ansi.RESET });
-            for (branches_list, 2..) |value, i| {
-                std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });
+    if (user_select_number == 1) {
+        std.debug.print("{s}Please select the branch you want to install (type the index number):{s}\n", .{ ansi.BRIGHT_CYAN ++ ansi.BOLD, ansi.RESET });
+        std.debug.print("1){s} Master Branch {s}\n", .{ ansi.BOLD, ansi.RESET });
+        for (branches_list, 2..) |value, i| {
+            std.debug.print("{}){s} {s}{s}\n", .{ i, ansi.BOLD, value, ansi.RESET });
+        }
+        const user_branch_input = while (true) {
+            std.debug.print("{s}>>>{s} ", .{ ansi.BRIGHT_CYAN, ansi.RESET });
+
+            const user_branch_input = hfs.read_integer() catch {
+                std.debug.print("{s}Invalid input recieved.{s}", .{ ansi.BRIGHT_RED, ansi.RESET });
+                continue;
+            };
+
+            if (user_branch_input < 1 or user_branch_input > branches_list.len + 1) {
+                std.debug.print("{s}Error:{s} Number selection is out of range.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
+                continue;
             }
-            inner: while (true) {
-                std.debug.print("{s}>>>{s} ", .{ ansi.BRIGHT_CYAN, ansi.RESET });
+            break user_branch_input;
+        };
+        const to_fetch = try switch (user_branch_input) {
+            1 => std.fmt.allocPrint(allocator, "git+https://github.com/{s}#{s}", .{ repo.full_name, "master" }),
+            else => try std.fmt.allocPrint(allocator, "git+https://github.com/{s}#{s}", .{ repo.full_name, branches_list[user_branch_input - 2] }),
+        };
 
-                var buf3: [16]u8 = undefined;
+        var new_process2 = std.process.Child.init(&[_][]const u8{ "zig", "fetch", to_fetch }, allocator);
+        new_process2.stdout_behavior = .Pipe;
+        try new_process2.spawn();
+        const asdf = try new_process2.stdout.?.readToEndAlloc(allocator, std.math.maxInt(usize));
+        const new_terminal2 = try new_process2.wait();
+        switch (new_terminal2.Exited) {
+            0 => {
+                std.debug.print("This is the thing: {s}", .{asdf});
+                // I will parse asdf to get the dependency's name and version!!!
+                var iter = std.mem.splitScalar(u8, asdf, '-');
+                const name = iter.next().?;
 
-                const len3 = try stdin.read(&buf3);
+                var new_process: std.process.Child = .init(&[_][]const u8{ "zig", "fetch", "--save", to_fetch }, allocator);
+                new_process.stderr_behavior = .Pipe;
 
-                var input3 = buf3[0..len3];
-                std.debug.print("|{s}|", .{input3});
+                try new_process.spawn();
 
-                if (input.len == 0) {
-                    std.debug.print("{s}Error:{s} No input entered.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
-                    continue :inner;
-                }
+                const thing = try new_process.stderr.?.readToEndAlloc(allocator, std.math.maxInt(usize));
 
-                if (input3.len > 0 and (input3[input3.len - 1] == '\n' or input3[input3.len - 1] == '\r')) {
-                    input3 = input3[0 .. input3.len - 1];
-                }
+                const new_term = try new_process.wait();
 
-                for (input3) |char| {
-                    if (!std.ascii.isDigit(char)) {
-                        std.debug.print("{s}Error:{s} Non charater input recieved.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
-                        continue :inner;
-                    }
-                }
+                const index = std.mem.indexOf(u8, thing, " to commit ") orelse return error.no_internet;
 
-                const number3 = try std.fmt.parseInt(u16, input3, 10);
+                const remaining_thing = thing[index + " to commit ".len ..];
+                var iter5 = std.mem.splitScalar(u8, remaining_thing, '\n');
+                std.debug.print("\n\nImportant thing:{s}\n\n", .{thing});
 
-                if (number3 < 1 or number3 > branches_list.len) {
-                    std.debug.print("{s}Error:{s} Number selection is out of range.\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET });
-                    continue :inner;
-                }
-                const to_fetch = try std.fmt.bufPrintZ(&buf2, "git+https://github.com/{s}#{s}", .{ repo.full_name, branches_list[number3 - 1] });
-                // check if that file exists:
-                var new_process2 = std.process.Child.init(&[_][]const u8{ "zig", "fetch", to_fetch }, allocator);
-                new_process2.stdout_behavior = .Pipe;
-                try new_process2.spawn();
-                const asdf = try new_process2.stdout.?.readToEndAlloc(allocator, std.math.maxInt(usize));
-                const new_terminal2 = try new_process2.wait();
-                switch (new_terminal2.Exited) {
-                    0 => {
-                        std.debug.print("This is the thing: {s}", .{asdf});
-                        // I will parse asdf to get the dependency's name and version!!!
-                    },
-                    else => {
-                        std.debug.print("Fetch returned some error", .{});
-                        return;
-                    },
-                }
-
-                var new_process = std.process.Child.init(&[_][]const u8{ "zig", "fetch", "--save", to_fetch }, allocator);
-                const new_term = try new_process.spawnAndWait();
                 switch (new_term.Exited) {
                     0 => {
+                        const file = try std.fs.cwd().openFile("./zigp.zon", .{});
+                        defer file.close();
+
+                        // Read entire file into memory
+                        const data = try file.readToEndAlloc(allocator, std.math.maxInt(usize));
+                        defer allocator.free(data);
+
+                        const asdfff = try allocator.dupeZ(u8, data);
+                        const commit_hash = iter5.next().?;
+
+                        var zigp_zon_parsed = try hfs.parse_zigp_zon(allocator, asdfff);
+                        var iter2 = zigp_zon_parsed.dependencies.iterator();
+
+                        var dependency_existed_and_changed = false;
+                        while (iter2.next()) |dependency| {
+                            if (std.mem.eql(u8, dependency.key_ptr.*, name)) {
+                                // dependecy with same name already existed.
+                                // we'll basically add the latest version to it.
+                                dependency.value_ptr.owner_name.? = repo.owner;
+                                dependency.value_ptr.repo_name.? = repo.name;
+                                dependency.value_ptr.provider = repo.provider;
+                                dependency.value_ptr.version.? = try std.fmt.allocPrint(allocator, "%master#{s}", .{commit_hash});
+                                dependency_existed_and_changed = true;
+                            }
+                        }
+
+                        if (!dependency_existed_and_changed) {
+                            try zigp_zon_parsed.dependencies.put(allocator, name, .{
+                                .owner_name = repo.owner,
+                                .repo_name = repo.name,
+                                .provider = repo.provider,
+                                .version = try std.fmt.allocPrint(allocator, "%master#{s}", .{commit_hash}),
+                            });
+                        }
+                        var response = std.Io.Writer.Allocating.init(allocator);
+                        defer response.deinit();
+                        std.debug.print("{s}", .{try types.zigp_zon_to_string(zigp_zon_parsed, allocator)});
+
                         std.debug.print("{s}Successfully installed {s}.{s}\n", .{ ansi.BRIGHT_GREEN ++ ansi.BOLD, repo.full_name, ansi.RESET });
                         std.debug.print("{s}✧ Suggestion:{s}\n", .{ ansi.BRIGHT_MAGENTA ++ ansi.BOLD, ansi.RESET });
                         std.debug.print("You can add these lines to your build.zig (just above the b.installArtifact(exe) line).\n\n", .{});
                         const suggestor =
                             ansi.BRIGHT_BLUE ++ "const" ++ ansi.BRIGHT_CYAN ++ " {s} " ++ ansi.RESET ++ "= " ++ ansi.BRIGHT_CYAN ++ "b" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_YELLOW ++ "dependency" ++ ansi.RESET ++ "(" ++ ansi.BRIGHT_GREEN ++ "\"{s}\"" ++ ansi.RESET ++ ", ." ++ ansi.BRIGHT_MAGENTA ++ "{{}}" ++ ansi.RESET ++ ");" ++ "\n" ++
                             ansi.BRIGHT_CYAN ++ "exe" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_BLUE ++ "root_module" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_YELLOW ++ "addImport" ++ ansi.RESET ++ "(" ++ ansi.BRIGHT_GREEN ++ "\"{s}\"" ++ ansi.RESET ++ "," ++ ansi.BRIGHT_CYAN ++ " {s}" ++ ansi.RESET ++ "." ++ ansi.BRIGHT_YELLOW ++ "module" ++ ansi.RESET ++ "(" ++ ansi.BRIGHT_GREEN ++ "\"{s}\"" ++ ansi.RESET ++ "));\n";
-                        std.debug.print(suggestor, .{ repo.name, repo.name, repo.name, repo.name, repo.name });
+                        std.debug.print(suggestor, .{ name, name, name, name, name });
                     },
                     1 => std.debug.print("{s}Zig fetch returned an error. The process returned 1 exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET }),
                     else => std.debug.print("{s}Zig fetch returned an unknown error. It returned {} exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, new_term.Exited, ansi.RESET }),
                 }
-                return;
-            }
+            },
+            else => {
+                std.debug.print("Fetch returned some error", .{});
+            },
         }
+    } else {
+        const tag_to_install = try switch (user_select_number) {
+            1 => std.fmt.allocPrint(allocator, "git+https://github.com/{s}", .{repo.full_name}),
+            else => std.fmt.allocPrint(allocator, tar_file_url, .{ repo.full_name, versions_list[user_select_number - 2] }),
+        };
 
-        const tag_to_install = if (number == 1)
-            try std.fmt.bufPrintZ(&buf2, "git+https://github.com/{s}?ref=", .{repo.full_name})
-        else
-            try std.fmt.bufPrintZ(&buf2, tar_file_url, .{ repo.full_name, versions_list[number - 1] });
+        std.debug.print("{s}Adding package: {s}{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.UNDERLINE, versions_list[user_select_number - 2], ansi.RESET });
 
-        std.debug.print("{s}Adding package: {s}{s}{s}\n", .{ ansi.BRIGHT_YELLOW, ansi.UNDERLINE, versions_list[number - 1], ansi.RESET });
-
-        var process = std.process.Child.init(&[_][]const u8{ "zig", "fetch", "--save", tag_to_install }, allocator);
+        var process: std.process.Child = .init(&[_][]const u8{ "zig", "fetch", "--save", tag_to_install }, allocator);
         const term = try process.spawnAndWait();
         switch (term.Exited) {
             0 => {
@@ -173,7 +187,6 @@ pub fn add_package(repo: types.repository, allocator: std.mem.Allocator) !void {
             1 => std.debug.print("{s}Zig fetch returned an error. The process returned 1 exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, ansi.RESET }),
             else => std.debug.print("{s}Zig fetch returned an unknown error. It returned {} exit code.{s}\n", .{ ansi.RED ++ ansi.BOLD, term.Exited, ansi.RESET }),
         }
-        break;
     }
 }
 

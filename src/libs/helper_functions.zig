@@ -8,6 +8,23 @@ const releases_url = "https://api.github.com/repos/{s}/releases";
 const branches_url = "https://api.github.com/repos/{s}/branches";
 const tar_file_url = "https://github.com/{s}/archive/refs/tags/{s}.tar.gz";
 
+const in = std.fs.File.stdin();
+
+pub fn read_string(allocator: std.mem.Allocator) !u32 {
+    var bufr = std.mem.zeroes([500]u8);
+    var r = in.reader(&bufr);
+    var alloc: std.io.Writer.Allocating = .init(allocator);
+    _ = try r.interface.streamDelimiter(&alloc.writer, '\n');
+    return alloc.written();
+}
+
+pub fn read_integer() !u32 {
+    var buf: [25]u8 = undefined;
+    var reader = std.fs.File.stdin().reader(&buf);
+    const num_str =  reader.interface.takeDelimiterExclusive('\n') catch return error.UnexpectedEos;
+    return try std.fmt.parseInt(u32, num_str, 10);
+}
+
 pub fn fetch_versions(repo: types.repository, allocator: std.mem.Allocator) !std.ArrayList([]const u8) {
     // I am doing -2 for making sure {} is not included.
     if (releases_url.len + repo.full_name.len - 2 > MAX_ALLOWED_REPO_NAME_LENGTH) {
@@ -323,7 +340,7 @@ pub fn parse_zigp_zon(allocator: std.mem.Allocator, content: [:0]const u8) !type
                 .struct_literal => |sl| {
                     for (sl.names, 0..sl.vals.len) |dep_name, dep_index| {
                         const node = sl.vals.at(@intCast(dep_index));
-                        const dep_body = try std.zon.parse.fromZoirNode(types.build_zig_zon.Dependency, allocator, ast, zoir, node, null, .{});
+                        const dep_body = try std.zon.parse.fromZoirNode(types.zigp_zon.Dependency, allocator, ast, zoir, node, null, .{});
 
                         try result.dependencies.put(allocator, try allocator.dupe(u8, dep_name.get(zoir)), dep_body);
                     }

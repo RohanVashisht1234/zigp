@@ -6,6 +6,14 @@
             .url = "git+https://github.com/rohanvashisht1234/zorsig?ref=main#4e47d80a8e92f912c9465f4f6ac0c79c89bff4f3",
             .hash = "zorsig-0.0.1-AAAAAFgZAABK0y-goAY_tJzAcdU-itZpZiXxWGuU7Jww",
         },
+        .zap = .{
+            .url = "git+https://github.com/zigzap/zap?ref=zig-master#76679f308c702cd8880201e6e93914e1d836a54b",
+            .hash = "zap-0.10.6-GoeB8w-EJABTkxyoGH_Z8oMBYMxTBvn7YWk-DrJOHuDO",
+        },
+        .capy = .{
+            .url = "git+https://github.com/capy-ui/capy?ref=2025.3.0-mach#b253eac7c793f388e99f52a319a616dbb5409594",
+            .hash = "capy-0.4.0-xXDmB1C33QXu3fO-gjs0fMQ12FJ2meaQIKnmFL5VDFFx",
+        },
     },
     .fingerprint = 0x1879e3171df18555,
     .minimum_zig_version = "0.15.1",
